@@ -10,6 +10,10 @@ def startTime():
     global timing
     global chars
     global words
+    global mistakes
+    global attempts
+    attempts = 0
+    mistakes = 0
     chars = 0
     words = 0
     start = time.time()
@@ -24,12 +28,16 @@ def stopTime():
     global chars
     global words
     global maxChar
-    endChar = "{0:.3f}".format(chars / 4.79 * 2) + " WPM"
-    endWord = str(words * 2) + " WPM"
+    global wpm
+    endChar = "{0:.3f}".format(chars / 4.79 * 2) + " WPM  "
+    endWord = str(words * 2) + " WPM  "
+    accuracy = "Accuracy: 100.00%"
+    if attempts > 0:
+        accuracy = "Accuracy: " +  "{0:.2f}".format(100 - mistakes * 100 /attempts) + "%"
     if charMode.get():
-        wpm.configure(text=endChar)
+        wpm.configure(text=endChar + accuracy)
     else:
-        wpm.configure(text=endWord)
+        wpm.configure(text=endWord + accuracy)
     timer.configure(text="Time up! Most misspelled character: \"" + maxChar + "\"")
     timing = False
     done = True
@@ -53,12 +61,16 @@ def type(event):
     global charMode
     global maxx
     global maxChar
+    global mistakes
+    global attempts
+    global wpm
     if event.char == "\b" or event.char == "":
         return
     if not timing and not done and loaded:
         startTime()
     elif done:
         return
+    attempts += 1
     textBox.configure(state='normal')
     if text[0] == event.char:
         if event.char == "\b" or event.char == "":
@@ -72,12 +84,6 @@ def type(event):
         chars += 1
         if event.char == " ":
             words += 1
-        if charMode.get():
-            if time.time() - start != 0:
-                wpm.configure(text="{0:.3f}".format(chars / 4.79 * 60 / (time.time() - start)) + " WPM")
-        else:
-            if time.time() - start != 0:
-                wpm.configure(text="{0:.3f}".format(words * 60 / (time.time() - start)) + " WPM")
     else:
         textBox.tag_add("here", "1.0", "1.1")
         textBox.tag_configure("here", background = "red")
@@ -90,7 +96,15 @@ def type(event):
         if charArr[ord(event.char)] > maxx:
             maxx = charArr[ord(event.char)]
             maxChar = event.char
+        mistakes += 1
     textBox.configure(state='disabled')
+    accuracy = "Accuracy: " + "{0:.2f}".format(100 - mistakes * 100 / attempts) + "%"
+    if charMode.get():
+        if time.time() - start != 0:
+            wpm.configure(text="{0:.3f}".format(chars / 4.79 * 60 / (time.time() - start)) + " WPM  " + accuracy)
+    else:
+        if time.time() - start != 0:
+            wpm.configure(text="{0:.3f}".format(words * 60 / (time.time() - start)) + " WPM  " + accuracy)
 
 def newText():
     global text
@@ -154,6 +168,12 @@ def modeChange(mode):
     global charMode
     global endChar
     global endWord
+    global wpm
+    global mistakes
+    global attempts
+    accuracy = "Accuracy: 100.00%"
+    if attempts > 0:
+        accuracy = "Accuracy: " +  "{0:.2f}".format(100 - mistakes * 100/attempts) + "%"
     charMode = mode
     if done:
         if charMode.get():
@@ -162,9 +182,9 @@ def modeChange(mode):
             wpm.configure(text=endWord)
         return
     if mode:
-        wpm.configure(text="{0:.3f}".format(chars / 4.79 * 60 / (time.time() - start)) + " WPM")
+        wpm.configure(text="{0:.3f}".format(chars / 4.79 * 60 / (time.time() - start)) + " WPM  " + accuracy)
     else:
-        wpm.configure(text="{0:.3f}".format(words * 60 / (time.time() - start)) + " WPM")
+        wpm.configure(text="{0:.3f}".format(words * 60 / (time.time() - start)) + " WPM  " + accuracy)
 
 def soundChange(mode):
     global soundMode
@@ -177,10 +197,13 @@ def soundChange(mode):
             pygame.mixer_music.set_volume(0.4)
     except:
         poo = 1
+
 try:
     pygame.mixer_music.load("pop.mp3")
 except:
     poo = 1
+attempts = 0
+mistakes = 0
 charArr = [0] * 128
 maxx = 0
 maxChar = "None! Amazing!"
@@ -210,8 +233,9 @@ title.pack()
 myFont = font.Font(size=15, family = "Microsoft Yahei UI Light")
 timer = Label(topFrame, text="Start typing to start timer", font=myFont, bg="#ffabff")
 timer.pack()
-wpm = Label(topFrame, text="0 WPM", pady=10, font=myFont, bg="#ffabff")
+wpm = Label(topFrame, text="", pady=10, font=myFont, bg="#ffabff")
 wpm.pack()
+modeChange(charMode)
 textBox = Text(topFrame, font=myFont, height=1, width=30)
 textBox.bind("<Key>", type)
 textBox.pack()
