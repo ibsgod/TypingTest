@@ -1,4 +1,3 @@
-//TypingTest.py
 from tkinter import *
 import tkinter.font as font
 import time
