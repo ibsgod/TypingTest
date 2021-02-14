@@ -89,7 +89,7 @@ def type(event):
         textBox.tag_configure("here", background = "red")
         textBox.tag_configure("here", foreground = "white")
         try:
-            pygame.mixer_music.play(loops=0)
+            sound.play()
         except:
             poo = 1
         charArr[ord(event.char)] += 1
@@ -186,22 +186,17 @@ def modeChange(mode):
     else:
         wpm.configure(text="{0:.3f}".format(words * 60 / (time.time() - start)) + " WPM  " + accuracy)
 
-def soundChange(mode):
+def soundChange():
+    global sound
     global soundMode
-    try:
-        if not mode.get():
-            pygame.mixer_music.load("pop.mp3")
-            pygame.mixer_music.set_volume(1.0)
-        else:
-            pygame.mixer_music.load("wrong.mp3")
-            pygame.mixer_music.set_volume(0.4)
-    except:
-        poo = 1
+    if soundMode:
+        sound = pygame.mixer.Sound("pop.wav")
+        soundMode = False
+    else:
+        sound = pygame.mixer.Sound("wrong.wav")
+        soundMode = True
 
-try:
-    pygame.mixer_music.load("pop.mp3")
-except:
-    poo = 1
+
 attempts = 0
 mistakes = 0
 charArr = [0] * 128
@@ -210,7 +205,8 @@ maxChar = "None! Amazing!"
 loaded = False
 root = Tk()
 charMode = BooleanVar()
-soundMode = BooleanVar()
+soundMode = False
+sound = pygame.mixer.Sound("pop.wav")
 endChar = ""
 endWord = ""
 heading = ""
@@ -247,8 +243,9 @@ toppyFrame.pack()
 myFont = font.Font(size=10, family = "Microsoft Yahei UI Light")
 Radiobutton(toppyFrame, text="Actual WPM", font=myFont, bg="#ffabff", variable=charMode, value=False, command=lambda: modeChange(charMode)).grid(row=0, column=0)
 Radiobutton(toppyFrame, text="Calculated WPM", font=myFont, bg="#ffabff", variable=charMode, value=True, command=lambda: modeChange(charMode)).grid(row=0, column=1)
-Radiobutton(toppyFrame, text="Pop Sound :D", font=myFont, bg="#ffabff", variable=soundMode, value=False, command=lambda: soundChange(soundMode)).grid(row=1, column=0)
-Radiobutton(toppyFrame, text="Scary DUN Sound :O", font=myFont, bg="#ffabff", variable=soundMode, value=True, command=lambda: soundChange(soundMode)).grid(row=1, column=1)
+Radiobutton(toppyFrame, text="Scary DUN Sound :O", font=myFont, bg="#ffabff", value=False, command=lambda: soundChange()).grid(row=1, column=1)
+Radiobutton(toppyFrame, text="Pop Sound :D", font=myFont, bg="#ffabff",  value=True, command=lambda: soundChange()).grid(row=1, column=0)
+
 newText()
 updateTime()
 root.mainloop()
