@@ -91,7 +91,7 @@ def type(event):
         try:
             sound.play()
         except:
-            poo = 1
+            pass
         charArr[ord(event.char)] += 1
         if charArr[ord(event.char)] > maxx:
             maxx = charArr[ord(event.char)]
